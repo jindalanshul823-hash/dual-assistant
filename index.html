@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dual AI Assistants</title>
+  <style>
+    @import url(https://fonts.googleapis.com/css2?family=Lato&display=swap);
+    @import url(https://fonts.googleapis.com/css2?family=Open+Sans&display=swap);
+    @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined);
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #1a1a1a;
+      color: white;
+      line-height: 1.6;
+    }
+    
+    #webcrumbs {
+      width: 100%;
+      max-width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100vh;
+      background-color: #1a1a1a;
+    }
+    
+    .message-user {
+      background-color: #611bf8;
+      color: white;
+      align-self: flex-end;
+      border-radius: 18px;
+      border-bottom-right-radius: 5px;
+      max-width: 85%;
+      margin: 8px 0;
+      padding: 12px 16px;
+    }
+    
+    .message-ai {
+      background-color: #374151;
+      color: white;
+      align-self: flex-start;
+      border-radius: 18px;
+      border-bottom-left-radius: 5px;
+      max-width: 85%;
+      margin: 8px 0;
+      padding: 12px 16px;
+      position: relative;
+    }
+    
+    .typing-indicator {
+      display: inline-flex;
+      gap: 4px;
+      padding: 0.8rem 1rem;
+      background-color: #374151;
+      border-radius: 18px;
+      border-bottom-left-radius: 5px;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #9ca3af;
+      border-radius: 50%;
+      animation: typingAnimation 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typingAnimation {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+    
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #4b5563;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: #f5f6f9;
+      border: none;
+    }
+    
+    .copy-btn:hover {
+      background: #6b7280;
+    }
+    
+    .mic-btn {
+      position: absolute;
+      right: 80px; /* Increased from 50px to 80px for more spacing */
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+      color: #9ca3af;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mic-btn.listening {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { color: #611bf8; }
+      50% { color: #ff0000; }
+      100% { color: #611bf8; }
+    }
+
+    /* Logo Styles */
+    .bot-logo {
+      width: 60px;
+      height: 60px;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #611bf8;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .logo-active {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Header Layout */
+    .header-container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 10px 15px;
+      background: #2d2d2d;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .logo-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      margin-top: 4px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      margin-right: 8px;
+      box-shadow: 0 0 8px 2px rgba(16, 185, 129, 0.6);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeInUp 1s ease-out forwards;
+    }
+    
+    /* Mobile sidebar */
+    .mobile-sidebar {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 80%;
+      max-width: 300px;
+      height: 100%;
+      background: #2d2d2d;
+      z-index: 1000;
+      transition: left 0.3s ease;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      overflow-y: auto;
+    }
+    
+    .mobile-sidebar.open {
+      left: 0;
+    }
+    
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      display: none;
+    }
+    
+    .sidebar-overlay.open {
+      display: block;
+    }
+    
+    .menu-button {
+      display: block;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+      background: #611bf8;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    /* Chat area */
+    .chat-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      padding-bottom: 80px;
+    }
+    
+    /* Input area */
+    .input-area {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #2d2d2d;
+      padding: 10px 15px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+    
+    .input-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+    
+    #userInput {
+      width: 100%;
+      padding: 12px 50px 12px 15px;
+      border: 1px solid #444;
+      border-radius: 24px;
+      font-size: 16px;
+      background: #3d3d3d;
+      color: white;
+    }
+    
+    .emoji-button {
+      position: absolute;
+      right: 45px; /* Positioned next to mic button */
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #9ca3af;
+      z-index: 5;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .send-button {
+      background: #611bf8;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    
+    /* Assistant buttons */
+    .assistant-btn {
+      width: 100%;
+      text-align: left;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: #333;
+      color: white;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .assistant-btn.active {
+      background: #382a5d;
+      color: #b39ddb;
+    }
+    
+    .assistant-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    
+    .analytical-icon {
+      background: rgba(97, 27, 248, 0.1);
+      color: #611bf8;
+    }
+    
+    .creative-icon {
+      background: rgba(147, 51, 234, 0.1);
+      color: #9333ea;
+    }
+    
+    .both-icon {
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+    }
+    
+    .assistant-info {
+      flex: 1;
+    }
+    
+    .assistant-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    
+    .assistant-desc {
+      font-size: 12px;
+      color: #aaa;
+    }
+    
+    /* Tone selector */
+    .tone-selector {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      gap: 10px;
+    }
+    
+    #toneSelect {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #555;
+      background: #3d3d3d;
+      color: white;
+    }
+    
+    /* Clear chat button */
+    #clearChatBtn {
+      padding: 8px 15px;
+      background: #382a2a;
+      color: #ff5252;
+      border: none;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    /* Welcome message */
+    .welcome-container {
+      text-align: center;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .welcome-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .welcome-title {
+      font-size: 1.5rem;
+      margin: 10px 0;
+      font-weight: 600;
+    }
+    
+    .welcome-text {
+      color: #aaa;
+      line-height: 1.5;
+      max-width: 300px;
+    }
+    
+    /* Emoji picker */
+    .emoji-picker {
+      position: absolute;
+      bottom: 70px;
+      right: 15px;
+      width: 300px;
+      background: #2d2d2d;
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 10px;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .emoji-picker.open {
+      display: block;
+    }
+    
+    .emoji-category {
+      margin-bottom: 10px;
+    }
+    
+    .emoji-category-title {
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 5px;
+    }
+    
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+    }
+    
+    .emoji {
+      font-size: 20px;
+      cursor: pointer;
+      text-align: center;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    
+    .emoji:hover {
+      background: #3d3d3d;
+    }
+    
+    /* Desktop sidebar */
+    .desktop-sidebar {
+      width: 280px;
+      display: block;
+      position: relative;
+      background: #2d2d2d;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid #444;
+    }
+    
+    .desktop-sidebar .sidebar-header {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #444;
+    }
+    
+    .desktop-sidebar .sidebar-content {
+      padding: 20px;
+    }
+    
+    /* ----------- RESPONSIVE DESIGN ----------- */
+    @media (min-width: 769px) {
+      .container {
+        flex-direction: row;
+      }
+      
+      .menu-button {
+        display: none;
+      }
+      
+      .sidebar-overlay {
+        display: none !important;
+      }
+      
+      .input-area {
+        position: relative;
+      }
+      
+      .chat-area {
+        padding-bottom: 15px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .desktop-only {
+        display: none;
+      }
+      
+      .header-container {
+        padding-left: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="webcrumbs">
+    <button class="menu-button" onclick="toggleSidebar()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="mobile-sidebar" id="mobileSidebar">
+      <div style="padding: 20px; border-bottom: 1px solid #444;">
+        <h3 style="font-size: 24px; font-weight: 700; color: #611bf8; text-align: center; margin-bottom: 5px;">
+          BiSynk
+        </h3>
+        <p style="text-align: center; color: #aaa; font-style: italic;">
+          Where Logic Meets Imagination
+        </p>
+      </div>
+
+      <div style="padding: 20px;">
+        <div style="margin-bottom: 25px;">
+          <button id="mobileAnalyticalBtn" class="assistant-btn">
+            <div class="assistant-icon analytical-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                <path d="M12 2v20"></path>
+                <path d="M2 12h20"></path>
+              </svg>
+            </div>
+            <div class="assistant-info">
+              <div class="assistant-name">KRISH</div>
+              <div class="assistant-desc">Analytical AI</div>
+              <div class="assistant-desc">Data-driven analysis</div>
+            </div>
+          </button>
+          
+          <button id="mobileCreativeBtn" class="assistant-btn">
+            <div class="assistant-icon creative-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h7l-2 7 9-12h-7l2-7z"></path>
+              </svg>
+            </div>
+            <div class="assistant-info">
+              <div class="assistant-name">ANSHUL</div>
+              <div class="assistant-desc">Creative AI</div>
+              <div class="assistant-desc">Imaginative ideas</div>
+            </div>
+          </button>
+          
+          <button id="mobileBothBtn" class="assistant-btn active">
+            <div class="assistant-icon both-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="assistant-info">
+              <div class="assistant-name">Both AI's</div>
+              <div class="assistant-desc">Get dual perspectives</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="desktop-sidebar desktop-only">
+      <div class="sidebar-header">
+        <h3 style="font-size: 24px; font-weight: 700; color: #611bf8; margin-bottom: 5px;">
+          BiSynk
+        </h3>
+        <p style="color: #aaa; font-style: italic;">
+          Where Logic Meets Imagination
+        </p>
+      </div>
+
+      <div class="sidebar-content">
+        <div style="margin-bottom: 25px;">
+          <button id="analyticalBtn" class="assistant-btn">
+            <div class="assistant-icon analytical-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="2" ry="2"></rect>
+                <path d="M12 2v20"></path>
+                <path d="M2 12h20"></path>
+              </svg>
+            </div>
+            <div class="assistant-info">
+              <div class="assistant-name">KRISH</div>
+              <div class="assistant-desc">Analytical AI</div>
+              <div class="assistant-desc">Data-driven analysis</div>
+            </div>
+          </button>
+          
+          <button id="creativeBtn" class="assistant-btn">
+            <div class="assistant-icon creative-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h7l-2 7 9-12h-7l2-7z"></path>
+              </svg>
+            </div>
+            <div class="assistant-info">
+              <div class="assistant-name">ANSHUL</div>
+              <div class="assistant-desc">Creative AI</div>
+              <div class="assistant-desc">Imaginative ideas</div>
+            </div>
+          </button>
+          
+          <button id="bothBtn" class="assistant-btn active">
+            <div class="assistant-icon both-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="assistant-info">
+              <div class="assistant-name">Both AI's</div>
+              <div class="assistant-desc">Get dual perspectives</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="main-content" style="flex: 1; display: flex; flex-direction: column;">
+      <div class="header-container">
+        <div class="logo-title-group">
+          <div class="bot-logo" id="headerLogo">
+            <img src="dual.png" class="logo-img" id="dualLogo" alt="Dual AI">
+            <img src="krish.png" class="logo-img" id="krishLogo" alt="Krish AI" style="display:none">
+            <img src="anshul.png" class="logo-img" id="anshulLogo" alt="Anshul AI" style="display:none">
+            <div class="logo-text">KA</div>
+          </div>
+          
+          <div>
+            <h2 class="text-xl font-semibold text-gray-200" id="currentAssistant">
+              Dual AI Assistants
+            </h2>
+            <div class="status-indicator">
+              <div class="status-dot"></div>
+              <span id="assistantStatus">Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="chat-area" id="chatContainer">
+        <div class="welcome-container" id="welcomeMessage">
+          <div class="welcome-logo">
+  <img src="logo.png" alt="Dual AI" style="width:100%; height:100%; object-fit:cover;">
+</div>
+
+          <h2 class="welcome-title">Dual AI Assistant</h2>
+          <p class="welcome-text">
+            You're chatting with both Krish (Analytical AI) and Anshul (Creative AI). 
+            Krish provides data-driven analysis while Anshul offers creative perspectives.
+            Select a specific assistant from the sidebar or continue with both.
+          </p>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div class="tone-selector">
+            <label style="font-weight: 500;">Tone:</label>
+            <select id="toneSelect" style="padding: 8px; border-radius: 8px; border: 1px solid #555; background: #3d3d3d; color: white;">
+              <option value="friendly">Friendly</option>
+              <option value="formal">Formal</option>
+              <option value="professional">Professional</option>
+            </select>
+          </div>
+          
+          <button id="clearChatBtn" style="display: flex; align-items: center; gap: 5px; padding: 8px 12px; background: #382a2a; color: #ff5252; border: none; border-radius: 20px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Clear</span>
+          </button>
+        </div>
+        
+        <div class="input-container">
+          <div class="input-wrapper">
+            <input type="text" id="userInput" placeholder="Ask the AI assistants...">
+            <button class="emoji-button" id="emojiBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </button>
+            <button class="mic-btn" id="micBtn" title="Voice input">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+          
+          <button class="send-button" id="sendBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="emoji-picker" id="emojiPicker">
+    <div class="emoji-category">
+      <div class="emoji-category-title">Smileys & People</div>
+      <div class="emoji-grid">
+        <span class="emoji" onclick="insertEmoji('😀')">😀</span>
+        <span class="emoji" onclick="insertEmoji('😃')">😃</span>
+        <span class="emoji" onclick="insertEmoji('😄')">😄</span>
+        <span class="emoji" onclick="insertEmoji('😁')">😁</span>
+        <span class="emoji" onclick="insertEmoji('😆')">😆</span>
+        <span class="emoji" onclick="insertEmoji('😅')">😅</span>
+        <span class="emoji" onclick="insertEmoji('😂')">😂</span>
+        <span class="emoji" onclick="insertEmoji('🤣')">🤣</span>
+        <span class="emoji" onclick="insertEmoji('😊')">😊</span>
+        <span class="emoji" onclick="insertEmoji('😇')">😇</span>
+        <span class="emoji" onclick="insertEmoji('🙂')">🙂</span>
+        <span class="emoji" onclick="insertEmoji('🙃')">🙃</span>
+        <span class="emoji" onclick="insertEmoji('😉')">😉</span>
+        <span class="emoji" onclick="insertEmoji('😌')">😌</span>
+        <span class="emoji" onclick="insertEmoji('😍')">😍</span>
+        <span class="emoji" onclick="insertEmoji('🥰')">🥰</span>
+        <span class="emoji" onclick="insertEmoji('😘')">😘</span>
+        <span class="emoji" onclick="insertEmoji('😗')">😗</span>
+        <span class="emoji" onclick="insertEmoji('😙')">😙</span>
+        <span class="emoji" onclick="insertEmoji('😚')">😚</span>
+        <span class="emoji" onclick="insertEmoji('😋')">😋</span>
+        <span class="emoji" onclick="insertEmoji('😛')">😛</span>
+        <span class="emoji" onclick="insertEmoji('😝')">😝</span>
+        <span class="emoji" onclick="insertEmoji('😜')">😜</span>
+        <span class="emoji" onclick="insertEmoji('🤪')">🤪</span>
+        <span class="emoji" onclick="insertEmoji('🤨')">🤨</span>
+        <span class="emoji" onclick="insertEmoji('🧐')">🧐</span>
+        <span class="emoji" onclick="insertEmoji('🤓')">🤓</span>
+        <span class="emoji" onclick="insertEmoji('😎')">😎</span>
+        <span class="emoji" onclick="insertEmoji('🤩')">🤩</span>
+        <span class="emoji" onclick="insertEmoji('🥳')">🥳</span>
+        <span class="emoji" onclick="insertEmoji('😏')">😏</span>
+        <span class="emoji" onclick="insertEmoji('😒')">😒</span>
+        <span class="emoji" onclick="insertEmoji('😞')">😞</span>
+        <span class="emoji" onclick="insertEmoji('😔')">😔</span>
+        <span class="emoji" onclick="insertEmoji('😟')">😟</span>
+        <span class="emoji" onclick="insertEmoji('😕')">😕</span>
+        <span class="emoji" onclick="insertEmoji('🙁')">🙁</span>
+        <span class="emoji" onclick="insertEmoji('☹️')">☹️</span>
+        <span class="emoji" onclick="insertEmoji('😣')">😣</span>
+        <span class="emoji" onclick="insertEmoji('😖')">😖</span>
+        <span class="emoji" onclick="insertEmoji('😫')">😫</span>
+        <span class="emoji" onclick="insertEmoji('😩')">😩</span>
+        <span class="emoji" onclick="insertEmoji('🥺')">🥺</span>
+        <span class="emoji" onclick="insertEmoji('😢')">😢</span>
+        <span class="emoji" onclick="insertEmoji('😭')">😭</span>
+        <span class="emoji" onclick="insertEmoji('😤')">😤</span>
+        <span class="emoji" onclick="insertEmoji('😠')">😠</span>
+        <span class="emoji" onclick="insertEmoji('😡')">😡</span>
+        <span class="emoji" onclick="insertEmoji('🤬')">🤬</span>
+        <span class="emoji" onclick="insertEmoji('🤯')">🤯</span>
+        <span class="emoji" onclick="insertEmoji('😳')">😳</span>
+        <span class="emoji" onclick="insertEmoji('🥵')">🥵</span>
+        <span class="emoji" onclick="insertEmoji('🥶')">🥶</span>
+        <span class="emoji" onclick="insertEmoji('😱')">😱</span>
+        <span class="emoji" onclick="insertEmoji('😨')">😨</span>
+        <span class="emoji" onclick="insertEmoji('😰')">😰</span>
+        <span class="emoji" onclick="insertEmoji('😥')">😥</span>
+        <span class="emoji" onclick="insertEmoji('😓')">😓</span>
+        <span class="emoji" onclick="insertEmoji('🫣')">🫣</span>
+        <span class="emoji" onclick="insertEmoji('🤗')">🤗</span>
+        <span class="emoji" onclick="insertEmoji('🫡')">🫡</span>
+        <span class="emoji" onclick="insertEmoji('🤔')">🤔</span>
+        <span class="emoji" onclick="insertEmoji('🫢')">🫢</span>
+        <span class="emoji" onclick="insertEmoji('🤭')">🤭</span>
+        <span class="emoji" onclick="insertEmoji('🤫')">🤫</span>
+        <span class="emoji" onclick="insertEmoji('🤥')">🤥</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // API URL - points to the same origin as the frontend
+    const API_URL = `${window.location.origin}/api/chat`;
+    
+    // Mobile sidebar functionality
+    function toggleSidebar() {
+      const sidebar = document.getElementById('mobileSidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    }
+    
+    // Initialize with both AIs
+    setMode('both');
+    
+    // Add event listeners for assistant buttons (both mobile and desktop)
+    document.getElementById('analyticalBtn').addEventListener('click', () => setMode('analytical'));
+    document.getElementById('creativeBtn').addEventListener('click', () => setMode('creative'));
+    document.getElementById('bothBtn').addEventListener('click', () => setMode('both'));
+    
+    document.getElementById('mobileAnalyticalBtn').addEventListener('click', () => {
+      setMode('analytical');
+      toggleSidebar();
+    });
+    
+    document.getElementById('mobileCreativeBtn').addEventListener('click', () => {
+      setMode('creative');
+      toggleSidebar();
+    });
+    
+    document.getElementById('mobileBothBtn').addEventListener('click', () => {
+      setMode('both');
+      toggleSidebar();
+    });
+    
+    // Set active mode function
+    function setMode(mode) {
+      // Remove active class from all buttons
+      document.querySelectorAll('.assistant-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Update logo based on mode
+      const dualLogo = document.getElementById('dualLogo');
+      const krishLogo = document.getElementById('krishLogo');
+      const anshulLogo = document.getElementById('anshulLogo');
+      const logoText = document.querySelector('.logo-text');
+      
+      // Hide all logos first
+      dualLogo.style.display = 'none';
+      krishLogo.style.display = 'none';
+      anshulLogo.style.display = 'none';
+      logoText.style.display = 'block';
+      
+      // Add active class to clicked button and update logo
+      if (mode === 'analytical') {
+        document.getElementById('analyticalBtn').classList.add('active');
+        document.getElementById('mobileAnalyticalBtn').classList.add('active');
+        document.getElementById('currentAssistant').textContent = 'Krish Analytical Thinker';
+        updateWelcomeMessage('analytical');
+        
+        // Show Krish logo if available, otherwise show text
+        if (krishLogo.complete && krishLogo.naturalHeight !== 0) {
+          krishLogo.style.display = 'block';
+          logoText.style.display = 'none';
+        }
+      } else if (mode === 'creative') {
+        document.getElementById('creativeBtn').classList.add('active');
+        document.getElementById('mobileCreativeBtn').classList.add('active');
+        document.getElementById('currentAssistant').textContent = 'Anshul Creative Thinker';
+        updateWelcomeMessage('creative');
+        
+        // Show Anshul logo if available, otherwise show text
+        if (anshulLogo.complete && anshulLogo.naturalHeight !== 0) {
+          anshulLogo.style.display = 'block';
+          logoText.style.display = 'none';
+        }
+      } else {
+        document.getElementById('bothBtn').classList.add('active');
+        document.getElementById('mobileBothBtn').classList.add('active');
+        document.getElementById('currentAssistant').textContent = 'Dual AI Assistants';
+        updateWelcomeMessage('both');
+        
+        // Show Dual logo if available, otherwise show text
+        if (dualLogo.complete && dualLogo.naturalHeight !== 0) {
+          dualLogo.style.display = 'block';
+          logoText.style.display = 'none';
+        }
+      }
+    }
+    
+    // Check if logo images exist and update display accordingly
+    function checkLogos() {
+      const dualLogo = document.getElementById('dualLogo');
+      const krishLogo = document.getElementById('krishLogo');
+      const anshulLogo = document.getElementById('anshulLogo');
+      const logoText = document.querySelector('.logo-text');
+      
+      // Set error handlers for images
+      [dualLogo, krishLogo, anshulLogo].forEach(img => {
+        img.onerror = function() {
+          this.style.display = 'none';
+          logoText.style.display = 'block';
+        };
+        img.onload = function() {
+          // If current mode matches this logo, show it
+          const currentMode = document.getElementById('bothBtn').classList.contains('active') ? 'both' : 
+                            document.getElementById('analyticalBtn').classList.contains('active') ? 'analytical' : 'creative';
+          
+          if ((currentMode === 'both' && this.id === 'dualLogo') ||
+              (currentMode === 'analytical' && this.id === 'krishLogo') ||
+              (currentMode === 'creative' && this.id === 'anshulLogo')) {
+            this.style.display = 'block';
+            logoText.style.display = 'none';
+          }
+        };
+      });
+    }
+    
+    // Call checkLogos when page loads
+    window.addEventListener('load', checkLogos);
+    
+    // Update welcome message based on selected assistant
+    function updateWelcomeMessage(mode) {
+      const welcomeTitle = document.querySelector('.welcome-title');
+      const welcomeText = document.querySelector('.welcome-text');
+      
+      if (mode === 'analytical') {
+        welcomeTitle.textContent = 'Krish Analytical AI';
+        welcomeText.textContent = 'You\'re chatting with Krish, the Analytical AI. Krish provides data-driven analysis, logical reasoning, and structured problem-solving approaches.';
+      } else if (mode === 'creative') {
+        welcomeTitle.textContent = 'Anshul Creative AI';
+        welcomeText.textContent = 'You\'re chatting with Anshul, the Creative AI. Anshul offers imaginative ideas, innovative solutions, and out-of-the-box thinking.';
+      } else {
+        welcomeTitle.textContent = 'Dual AI Assistant';
+        welcomeText.textContent = 'You\'re chatting with both Krish (Analytical AI) and Anshul (Creative AI). Krish provides data-driven analysis while Anshul offers creative perspectives. Select a specific assistant from the sidebar or continue with both.';
+      }
+    }
+    
+    // Send message functionality
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('userInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+      
+      if (message) {
+        // Add message to chat
+        addMessage(message, 'user');
+        input.value = '';
+        
+        // Get the current mode
+        const mode = document.getElementById('bothBtn').classList.contains('active') ? 'both' : 
+                    document.getElementById('analyticalBtn').classList.contains('active') ? 'analytical' : 'creative';
+        
+        // Show typing indicator
+        const chatContainer = document.getElementById('chatContainer');
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        typingIndicator.innerHTML = `
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        `;
+        chatContainer.appendChild(typingIndicator);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        
+        // Hide welcome message
+        document.getElementById('welcomeMessage').style.display = 'none';
+        
+        try {
+          if (mode === 'both') {
+            // Send to both assistants
+            const [analyticalResponse, creativeResponse] = await Promise.all([
+              sendToAPI(message, 'analytical'),
+              sendToAPI(message, 'creative')
+            ]);
+            
+            // Remove typing indicator
+            chatContainer.removeChild(typingIndicator);
+            
+            // Add responses
+            addMessage(analyticalResponse, 'analytical');
+            addMessage(creativeResponse, 'creative');
+          } else {
+            // Send to single assistant
+            const response = await sendToAPI(message, mode);
+            
+            // Remove typing indicator
+            chatContainer.removeChild(typingIndicator);
+            
+            // Add response
+            addMessage(response, mode);
+          }
+        } catch (error) {
+          // Remove typing indicator
+          chatContainer.removeChild(typingIndicator);
+          
+          // Show error message
+          addMessage("Error: " + error.message, 'error');
+        }
+      }
+    }
+    
+    async function sendToAPI(message, style) {
+      try {
+        let systemMessage = "";
+        if (style === 'analytical') {
+          systemMessage = "You are Analytical AI. Provide data-driven analysis with statistics and logical reasoning.";
+        } else if (style === 'creative') {
+          systemMessage = "You are Creative AI. Be imaginative and provide unconventional ideas.";
+        }
+        
+        const messages = [
+          { role: "system", content: systemMessage },
+          { role: "user", content: message }
+        ];
+        
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages, style })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.response || "No response received.";
+      } catch (error) {
+        console.error("Error in sendToAPI:", error);
+        return "Error: " + error.message;
+      }
+    }
+    
+    function addMessage(content, sender) {
+      const chatContainer = document.getElementById('chatContainer');
+      const messageDiv = document.createElement('div');
+      
+      messageDiv.className = sender === 'user' ? 'message-user' : 'message-ai';
+      
+      // Create message content
+      const messageContent = document.createElement('div');
+      messageContent.textContent = content;
+      messageDiv.appendChild(messageContent);
+      
+      // Add copy button for AI messages
+      if (sender !== 'user') {
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.innerHTML = '📋';
+        copyBtn.title = 'Copy to clipboard';
+        copyBtn.onclick = function() {
+          navigator.clipboard.writeText(content);
+          copyBtn.innerHTML = '✅';
+          setTimeout(() => {
+            copyBtn.innerHTML = '📋';
+          }, 1500);
+        };
+        messageDiv.appendChild(copyBtn);
+      }
+      
+      chatContainer.appendChild(messageDiv);
+      
+      // Scroll to bottom
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    // Clear chat functionality
+    document.getElementById('clearChatBtn').addEventListener('click', () => {
+      document.getElementById('chatContainer').innerHTML = '';
+      document.getElementById('welcomeMessage').style.display = 'flex';
+    });
+    
+    // Voice input functionality
+    let recognition = null;
+    let isListening = false;
+    
+    document.getElementById('micBtn').addEventListener('click', toggleVoiceInput);
+    
+    function toggleVoiceInput() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("Speech recognition is not supported in this browser.");
+        return;
+      }
+      
+      if (isListening) {
+        stopVoiceInput();
+      } else {
+        startVoiceInput();
+      }
+    }
+    
+    function startVoiceInput() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
+      recognition.onstart = function() {
+        isListening = true;
+        document.getElementById('micBtn').classList.add('listening');
+        document.getElementById('userInput').placeholder = "Listening...";
+      };
+      
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('userInput').value = transcript;
+      };
+      
+      recognition.onerror = function(event) {
+        console.error('Speech recognition error', event.error);
+        stopVoiceInput();
+      };
+      
+      recognition.onend = function() {
+        stopVoiceInput();
+      };
+      
+      recognition.start();
+    }
+    
+    function stopVoiceInput() {
+      if (recognition) {
+        recognition.stop();
+      }
+      isListening = false;
+      document.getElementById('micBtn').classList.remove('listening');
+      document.getElementById('userInput').placeholder = "Ask the AI assistants...";
+    }
+    
+    // Emoji picker functionality
+    const emojiBtn = document.getElementById('emojiBtn');
+    const emojiPicker = document.getElementById('emojiPicker');
+    
+    emojiBtn.addEventListener('click', () => {
+      emojiPicker.classList.toggle('open');
+    });
+    
+    function insertEmoji(emoji) {
+      const input = document.getElementById('userInput');
+      const cursorPos = input.selectionStart;
+      const textBefore = input.value.substring(0, cursorPos);
+      const textAfter = input.value.substring(cursorPos);
+      
+      input.value = textBefore + emoji + textAfter;
+      input.selectionStart = cursorPos + emoji.length;
+      input.selectionEnd = cursorPos + emoji.length;
+      input.focus();
+      
+      // Close the emoji picker after selection
+      emojiPicker.classList.remove('open');
+    }
+    
+    // Close emoji picker when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!emojiBtn.contains(e.target) && !emojiPicker.contains(e.target)) {
+        emojiPicker.classList.remove('open');
+      }
+    });
+  </script>
+</body>
+</html>
